@@ -1,7 +1,8 @@
-import PrayerTimes from "./components/PrayerTimes";
 "use client";
 
+import PrayerTimes from "./PrayerTimes";
 import { useEffect, useState } from "react";
+
 
 type Timetable = {
   fajr: string;
