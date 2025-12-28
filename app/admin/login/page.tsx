@@ -1,6 +1,6 @@
-
-export const dynamic = "force-dynamic";
 "use client";
+export const dynamic = "force-dynamic";
+
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -25,10 +25,11 @@ export default function AdminLoginPage() {
 
     setLoading(false);
 
-    if (error) {
-      setMsg(error.message);
-      return;
-    }
+   if (!supabase) {
+  setMsg("Supabase is not configured. Please check environment variables.");
+  setLoading(false);
+  return;
+}
 
     router.push("/admin/prayer-times");
   }
