@@ -1,6 +1,6 @@
 "use client";
 
-import PrayerTimes from "./PrayerTimes";
+
 import { useEffect, useState } from "react";
 
 
