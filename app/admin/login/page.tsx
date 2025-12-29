@@ -1,7 +1,6 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
@@ -16,20 +15,26 @@ export default function AdminLoginPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
+
+    // ✅ Check supabase first
+    if (!supabase) {
+      setMsg("Supabase is not configured. Please check environment variables.");
+      return;
+    }
+
     setLoading(true);
 
-const { error } = await supabase!.auth.signInWithPassword(...)
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-    };
+    });
 
     setLoading(false);
 
-   if (!supabase) {
-  setMsg("Supabase is not configured. Please check environment variables.");
-  setLoading(false);
-  return;
-}
+    if (error) {
+      setMsg(error.message);
+      return;
+    }
 
     router.push("/admin/prayer-times");
   }
