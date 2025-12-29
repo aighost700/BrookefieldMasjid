@@ -2,41 +2,44 @@
 export const dynamic = "force-dynamic";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMsg(null);
-
-    // ✅ Check supabase first
-    if (!supabase) {
-      setMsg("Supabase is not configured. Please check environment variables.");
-      return;
-    }
-
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const supabase = createClient();
 
-    setLoading(false);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      setMsg(error.message);
-      return;
+      if (error) {
+        setMsg(error.message);
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Redirect back to where user came from (if middleware sent them)
+      const redirectedFrom = searchParams.get("redirectedFrom");
+      router.push(redirectedFrom || "/admin/prayer-times");
+    } catch (err) {
+      setMsg("Login failed. Please check your Supabase configuration.");
+      setLoading(false);
     }
-
-    router.push("/admin/prayer-times");
   }
 
   return (
@@ -55,6 +58,7 @@ export default function AdminLoginPage() {
             placeholder="admin@brookfieldmasjid.org.uk"
             style={{ width: "100%", padding: 10, border: "1px solid #ccc" }}
             required
+            autoComplete="email"
           />
         </label>
 
@@ -66,18 +70,19 @@ export default function AdminLoginPage() {
             type="password"
             style={{ width: "100%", padding: 10, border: "1px solid #ccc" }}
             required
+            autoComplete="current-password"
           />
         </label>
 
         <button
           type="submit"
           disabled={loading}
-          style={{ padding: 10, fontWeight: 700 }}
+          style={{ padding: 10, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
 
-        {msg && <p style={{ color: "crimson" }}>{msg}</p>}
+        {msg && <p style={{ color: "crimson", marginTop: 8 }}>{msg}</p>}
       </form>
     </main>
   );
